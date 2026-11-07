@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Project Global</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<style>
+:root{--blue:#2563ff;--blue2:#e8efff;--bg:#f4f7ff;--card:#fff;--ink:#12203f;--muted:#5d6b8c;--line:#e3e9f7;--red:#e5484d;--r:16px}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;margin:0}
+body{font-family:"Plus Jakarta Sans",system-ui,-apple-system,"Segoe UI",sans-serif;background:var(--bg);color:var(--ink);overflow:hidden}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer;border:0;background:none;position:relative;overflow:hidden;transition:transform .15s,background .2s,box-shadow .2s}
+button:active{transform:scale(.95)}
+:focus-visible{outline:3px solid #9db8ff;outline-offset:2px}
+[hidden]{display:none!important}
+
+/* every touch: ripple on buttons + pulse anywhere */
+.rip{position:absolute;border-radius:50%;background:currentColor;opacity:.25;transform:scale(0);animation:rip .6s ease-out forwards;pointer-events:none}
+@keyframes rip{to{transform:scale(1);opacity:0}}
+.pulse{position:fixed;width:46px;height:46px;margin:-23px 0 0 -23px;border-radius:50%;border:2px solid var(--blue);pointer-events:none;z-index:99;animation:pulse .65s ease-out forwards}
+@keyframes pulse{from{transform:scale(.2);opacity:.9}to{transform:scale(1.5);opacity:0}}
+
+.btn{background:var(--blue);color:#fff;border-radius:12px;padding:12px 20px;font-weight:700;box-shadow:0 6px 16px #2563ff40}
+.btn:hover{box-shadow:0 10px 22px #2563ff55;transform:translateY(-2px)}
+.btn:active{transform:scale(.96)}
+.btn.soft{background:var(--blue2);color:var(--blue);box-shadow:none}
+
+/* auth */
+#auth{height:100%;display:grid;place-items:center;padding:20px;background:radial-gradient(circle at 20% 10%,#dbe6ff,transparent 45%),radial-gradient(circle at 85% 90%,#ffe3e6,transparent 40%),var(--bg)}
+.card{background:var(--card);border-radius:24px;padding:28px;width:min(420px,100%);box-shadow:0 24px 60px #1a3a8f1f;animation:rise .6s cubic-bezier(.2,.8,.2,1) both}
+@keyframes rise{from{opacity:0;transform:translateY(24px) scale(.97)}}
+.logo{display:flex;align-items:center;gap:10px;font-weight:800;font-size:22px;margin-bottom:6px}
+.logo svg{animation:spin 14s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.sub{color:var(--muted);margin:0 0 18px;font-size:15px}
+.tabs{display:flex;background:var(--bg);border-radius:12px;padding:4px;margin-bottom:16px;position:relative}
+.tabs button{flex:1;padding:10px;border-radius:9px;font-weight:700;color:var(--muted);z-index:1}
+.tabs button.on{color:var(--blue)}
+.tabs i{position:absolute;top:4px;bottom:4px;left:4px;width:calc(50% - 4px);background:#fff;border-radius:9px;box-shadow:0 2px 8px #1a3a8f22;transition:transform .3s cubic-bezier(.3,1.4,.5,1)}
+.tabs.s i{transform:translateX(100%)}
+label{display:block;font-size:13px;font-weight:700;margin:12px 0 5px}
+input,select{width:100%;padding:12px 14px;border:1.5px solid var(--line);border-radius:12px;background:#fff;transition:border-color .2s,box-shadow .2s,transform .2s}
+input:focus,select:focus{outline:0;border-color:var(--blue);box-shadow:0 0 0 4px #2563ff22;transform:translateY(-1px)}
+.extra{overflow:hidden;max-height:0;opacity:0;transition:max-height .4s,opacity .3s}
+.signup .extra{max-height:200px;opacity:1}
+#go{width:100%;margin-top:18px}
+.note{font-size:13px;color:var(--muted);text-align:center;margin:14px 0 0}
+.err{color:var(--red);font-size:13px;min-height:18px;margin:10px 0 0;text-align:center}
+
+/* app */
+#app{height:100%;display:grid;grid-template-columns:290px 1fr;animation:fade .5s both}
+@keyframes fade{from{opacity:0}}
+aside{background:#fff;border-right:1px solid var(--line);display:flex;flex-direction:column;min-height:0;transition:transform .35s cubic-bezier(.2,.8,.2,1)}
+.top{padding:calc(18px + env(safe-area-inset-top,0px)) 18px 12px}
+.me{display:flex;align-items:center;gap:10px;padding:12px 18px;border-top:1px solid var(--line);margin-top:auto;padding-bottom:calc(12px + env(safe-area-inset-bottom,0px))}
+.av{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;color:#fff;font-weight:800;flex:none}
+.me b{display:block;font-size:14px}.me small{color:var(--muted)}
+.me button{margin-left:auto;color:var(--muted);padding:8px 10px;border-radius:10px;font-size:13px;font-weight:700}
+.me button:hover{background:var(--bg)}
+#rooms{overflow:auto;padding:4px 10px;flex:1}
+.room{display:block;width:100%;text-align:left;padding:12px;border-radius:14px;margin:2px 0;animation:slide .5s both}
+@keyframes slide{from{opacity:0;transform:translateX(-14px)}}
+.room b{display:block;font-size:15px}.room small{color:var(--muted)}
+.room:hover{background:var(--bg);transform:translateX(4px)}
+.room.on{background:var(--blue2);color:var(--blue)}
+.room.on small{color:#4a6fd8}
+main{display:flex;flex-direction:column;min-height:0;min-width:0}
+.head{display:flex;align-items:center;gap:10px;padding:calc(14px + env(safe-area-inset-top,0px)) 20px 14px;background:#fff;border-bottom:1px solid var(--line)}
+.head h2{margin:0;font-size:18px}.head small{color:var(--muted);display:block}
+#menu{display:none;padding:8px 12px;border-radius:10px;background:var(--bg);font-size:20px}
+#feed{flex:1;overflow:auto;padding:20px;display:flex;flex-direction:column;gap:10px;scroll-behavior:smooth}
+.empty{margin:auto;color:var(--muted);text-align:center}
+.msg{max-width:min(520px,82%);align-self:flex-start;animation:pop .4s cubic-bezier(.2,1.2,.4,1) both;transform-origin:left bottom}
+.msg.mine{align-self:flex-end;transform-origin:right bottom}
+@keyframes pop{from{opacity:0;transform:translateY(14px) scale(.9)}}
+.who{font-size:12px;font-weight:700;color:var(--muted);margin:0 4px 3px}
+.mine .who{text-align:right}
+.bub{background:#fff;border:1px solid var(--line);padding:10px 14px;border-radius:18px 18px 18px 6px;line-height:1.45;overflow-wrap:anywhere;transition:transform .2s,box-shadow .2s}
+.mine .bub{background:var(--blue);color:#fff;border-color:var(--blue);border-radius:18px 18px 6px 18px}
+.bub:hover{transform:translateY(-2px);box-shadow:0 8px 20px #1a3a8f1c}
+.meta{display:flex;gap:10px;align-items:center;font-size:11px;color:var(--muted);margin:3px 6px}
+.mine .meta{justify-content:flex-end}
+.meta button{padding:2px 6px;border-radius:6px;font-size:11px;font-weight:700;color:var(--muted)}
+.meta button:hover{background:#fde8e9;color:var(--red)}
+.typing{display:flex;gap:4px;padding:12px 14px;background:#fff;border:1px solid var(--line);border-radius:18px;width:max-content;align-self:flex-start;animation:pop .3s both}
+.typing i{width:7px;height:7px;border-radius:50%;background:#9aa8c9;animation:dot 1s infinite}
+.typing i:nth-child(2){animation-delay:.15s}.typing i:nth-child(3){animation-delay:.3s}
+@keyframes dot{40%{transform:translateY(-6px);background:var(--blue)}}
+form.send{display:flex;gap:10px;padding:14px 20px calc(14px + env(safe-area-inset-bottom,0px));background:#fff;border-top:1px solid var(--line)}
+form.send input{border-radius:999px;padding:13px 18px}
+#sendBtn{width:50px;height:50px;border-radius:50%;background:var(--blue);color:#fff;display:grid;place-items:center;flex:none;box-shadow:0 6px 16px #2563ff40}
+#sendBtn svg{transition:transform .4s}
+#sendBtn.fly svg{transform:translate(26px,-26px) scale(.4);opacity:0}
+#toast{position:fixed;left:50%;bottom:24px;transform:translate(-50%,120px);background:var(--ink);color:#fff;padding:12px 20px;border-radius:999px;font-size:14px;transition:transform .4s cubic-bezier(.2,1.3,.4,1);z-index:100;max-width:90vw}
+#toast.on{transform:translate(-50%,0)}
+@media(max-width:760px){
+  #app{grid-template-columns:1fr}
+  aside{position:fixed;inset:0 auto 0 0;width:84%;max-width:320px;z-index:20;transform:translateX(-105%);box-shadow:8px 0 40px #0003}
+  aside.open{transform:none}
+  #menu{display:block}
+  #veil{position:fixed;inset:0;background:#0b1635;opacity:0;pointer-events:none;transition:opacity .3s;z-index:15}
+  #veil.on{opacity:.4;pointer-events:auto}
+}
+@media(prefers-reduced-motion:reduce){*{animation-duration:.01s!important;transition-duration:.01s!important}}
+/* Red Thread intro */
+:root{--thread:#ff3b4e}
+.btn.ghost{background:transparent;color:var(--blue);border:2px solid var(--blue);box-shadow:none}
+#intro .btn{border-radius:999px;padding:12px 26px}
+
+#intro{position:fixed;inset:0;z-index:10;background:#0d1230;overflow:hidden;color:#fff}
+#intro[hidden]{display:none}
+#stage{position:absolute;inset:0;width:100%;height:100%}
+[data-s]{opacity:0;pointer-events:none;transition:opacity 1.2s ease}
+[data-s].on{opacity:1;pointer-events:auto}
+.thread{fill:none;stroke:var(--thread);stroke-width:3.5;stroke-linecap:round;stroke-dasharray:1;stroke-dashoffset:1;filter:url(#glow)}
+.thread.draw{stroke-dashoffset:0;transition:stroke-dashoffset 4s ease-in-out .5s}
+.tw{animation:tw 3s ease-in-out infinite}
+@keyframes tw{50%{opacity:.25}}
+.drift{animation:drift 14s linear forwards}
+@keyframes drift{to{transform:translateX(-70px)}}
+.gl{animation:glowp 1.6s ease-in-out infinite}
+@keyframes glowp{50%{opacity:.35}}
+@media (prefers-reduced-motion:reduce){.drift,.tw,.gl{animation:none}.thread.draw{transition-duration:.01s}}
+
+#sub{position:absolute;left:0;right:0;bottom:calc(6vh + env(safe-area-inset-bottom,0px));text-align:center;padding:0 24px}
+#sub span{display:inline-block;max-width:30ch;font-size:clamp(20px,4.6vw,30px);font-weight:500;line-height:1.45;text-shadow:0 2px 14px #000,0 0 3px #000;animation:in 1s ease both}
+@keyframes in{from{opacity:0;transform:translateY(8px)}}
+#ctl{position:absolute;top:calc(14px + env(safe-area-inset-top,0px));right:14px;display:flex;gap:8px}
+#ctl button{background:#ffffff1f;color:#fff;border:1px solid #ffffff55;border-radius:999px;padding:8px 16px;backdrop-filter:blur(6px)}
+.center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px;gap:14px}
+#quote p{font-size:clamp(24px,6vw,44px);font-weight:500;line-height:1.4;max-width:20ch;margin:0;text-shadow:0 0 30px #ff3b4e88}
+#gate h2{font-size:clamp(34px,8vw,60px);margin:0}
+#gate p,#welcome p{margin:0;color:#c9d2f5;max-width:34ch}
+#gate .row{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;margin-top:10px}
+#welcome h2{font-size:clamp(34px,8vw,56px);margin:0}
+#welcome .slogan{font-size:clamp(16px,3.6vw,22px);color:#fff}
+
+.bars{display:inline-flex;gap:2px;align-items:flex-end;height:14px;margin-right:8px;vertical-align:-2px}
+.bars i{width:3px;height:3px;border-radius:2px;background:#fff}
+.playing .bars i{animation:eq .9s ease-in-out infinite}.playing .bars i:nth-child(2){animation-delay:.3s}.playing .bars i:nth-child(3){animation-delay:.6s}
+@keyframes eq{50%{height:14px}}
+@media (prefers-reduced-motion:reduce){.playing .bars i{animation:none;height:10px}}
+.credit{font-size:12px;font-weight:700;color:var(--muted);letter-spacing:.02em;text-align:center;animation:fade 1.2s .6s both}
+.credit b{color:var(--blue)}
+#auth .credit{position:fixed;left:0;right:0;bottom:calc(12px + env(safe-area-inset-bottom,0px))}
+aside .credit{padding:0 0 12px;margin-top:-4px}
+#welcome .credit{color:#aab6d6;margin-top:18px}
+</style>
+</head>
+<body>
+
+<section id="auth" hidden>
+  <div class="card">
+    <div class="logo"><svg width="32" height="32" viewBox="0 0 72 72"><circle cx="36" cy="36" r="30" fill="none" stroke="#2563ff" stroke-width="6"/><path d="M12 44C26 20 46 58 60 28" fill="none" stroke="#ff3b4e" stroke-width="5" stroke-linecap="round"/></svg>Project Global</div>
+    <p class="sub">One World. One Humanity. No Hate.</p>
+    <div class="tabs" id="tabs"><i></i><button class="on" data-m="login" type="button">Log in</button><button data-m="signup" type="button">Sign up</button></div>
+    <form id="authForm" novalidate>
+      <label for="email">Email</label><input id="email" type="email" autocomplete="email" required>
+      <label for="pw">Password</label><input id="pw" type="password" autocomplete="current-password" minlength="8" required>
+      <div class="extra">
+        <label for="uname">Username</label><input id="uname" autocomplete="username" maxlength="24" placeholder="3 to 24 characters">
+        <label for="country">Country</label><select id="country"></select>
+      </div>
+      <p class="err" id="err" role="alert"></p>
+      <button class="btn" id="go" type="submit">Log in</button>
+    </form>
+    <p class="note" id="demoNote"></p>
+    <p class="note"><button class="btn soft" id="replayIntro" type="button">Watch The Red Thread</button></p>
+  </div>
+  <div class="credit">Created by <b>Ankit Tiwari</b></div>
+</section>
+
+<div id="app" hidden>
+  <aside id="side">
+    <div class="top"><div class="logo"><svg width="26" height="26" viewBox="0 0 72 72"><circle cx="36" cy="36" r="30" fill="none" stroke="#2563ff" stroke-width="6"/><path d="M12 44C26 20 46 58 60 28" fill="none" stroke="#ff3b4e" stroke-width="5" stroke-linecap="round"/></svg>Communities</div></div>
+    <div id="rooms"></div>
+    <div class="me"><div class="av" id="meAv"></div><div><b id="meName"></b><small id="meCountry"></small></div><button id="out" type="button">Log out</button></div>
+    <div class="credit">Created by <b>Ankit Tiwari</b></div>
+  </aside>
+  <div id="veil"></div>
+  <main>
+    <form class="send" id="sendForm"><input id="text" maxlength="1000" autocomplete="off" placeholder="Say hello to the world" aria-label="Message"><button id="sendBtn" type="submit" aria-label="Send"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M3 20l18-8L3 4v6l12 2-12 2z"/></svg></button></form>
+  </main>
+</div>
+<div id="intro" hidden>
+  <svg id="stage" viewBox="0 0 800 600" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+    <defs>
+      <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0b1030"/><stop offset=".7" stop-color="#2d2468"/><stop offset="1" stop-color="#5a3a8c"/></linearGradient>
+      <linearGradient id="dusk" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ff9a3c" stop-opacity="0"/><stop offset="1" stop-color="#ff9a3c" stop-opacity=".55"/></linearGradient>
+      <filter id="glow" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+      <pattern id="win" width="16" height="22" patternUnits="userSpaceOnUse"><rect x="4" y="5" width="6" height="9" rx="1" fill="#ffcf6b"/></pattern>
+
+      <g id="kid">
+        <path d="M16-40Q36-58 28-88" stroke="var(--sk)" stroke-width="7" fill="none" stroke-linecap="round"/>
+        <path d="M-22 0C-22-38-14-52 0-52C14-52 22-38 22 0Z" fill="var(--c)"/>
+        <circle cy="-70" r="17" fill="var(--sk)"/>
+        <path d="M-18-72C-19-94 19-94 18-72C12-83-8-85-18-72Z" fill="var(--h)"/>
+        <ellipse cx="-6.5" cy="-70" rx="3" ry="4.2" fill="#20142e"/><ellipse cx="6.5" cy="-70" rx="3" ry="4.2" fill="#20142e"/>
+        <circle cx="-7.4" cy="-71.5" r="1.2" fill="#fff"/><circle cx="5.6" cy="-71.5" r="1.2" fill="#fff"/>
+        <circle cx="-11" cy="-62" r="3" fill="#ff7a8a" opacity=".35"/><circle cx="11" cy="-62" r="3" fill="#ff7a8a" opacity=".35"/>
+        <path d="M-4-60Q0-57 4-60" stroke="#20142e" stroke-width="1.4" fill="none" stroke-linecap="round"/>
+      </g>
+      <g id="amara"><use href="#kid"/><circle cx="-15" cy="-90" r="10" fill="var(--h)"/><circle cx="15" cy="-90" r="10" fill="var(--h)"/></g>
+      <g id="p"><path d="M-12 0C-12-28-6-34 0-34C6-34 12-28 12 0Z" fill="var(--c)"/><circle cy="-44" r="10" fill="var(--sk)"/><path d="M-10-46C-10-60 10-60 10-46C5-53-5-53-10-46Z" fill="var(--h)"/></g>
+    </defs>
+
+    <rect width="800" height="600" fill="url(#sky)"/>
+    <g id="stars" data-s="0,1,2,3,4,5,6,7,8,9"></g>
+
+    <!-- scene 1 and 3: India -->
+    <g data-s="1,3">
+      <circle cx="590" cy="140" r="70" fill="#ffcf6b" opacity=".18"/><circle cx="590" cy="140" r="42" fill="#fff3d6"/>
+      <g fill="#1a1445"><rect x="0" y="360" width="90" height="120"/><rect x="100" y="300" width="70" height="180"/><rect x="180" y="390" width="100" height="90"/><rect x="300" y="340" width="80" height="140"/><rect x="680" y="320" width="120" height="160"/></g>
+      <g fill="url(#win)"><rect x="0" y="360" width="90" height="120"/><rect x="100" y="300" width="70" height="180"/><rect x="180" y="390" width="100" height="90"/><rect x="300" y="340" width="80" height="140"/><rect x="680" y="320" width="120" height="160"/></g>
+      <path d="M470 480V410Q470 350 540 350Q610 350 610 410V480Z" fill="#241a58"/><path d="M540 350V316" stroke="#241a58" stroke-width="4"/><circle cx="540" cy="312" r="5" fill="#ffcf6b"/>
+      <rect y="470" width="800" height="130" fill="#110c2a"/><rect y="466" width="800" height="8" fill="#1d1642"/>
+      <use href="#kid" style="--c:#ff9a3c;--sk:#c98b5e;--h:#1a1020" transform="translate(230 470) scale(1.8)"/>
+    </g>
+    <circle data-s="3" cx="280" cy="312" r="30" fill="#ff3b4e" opacity=".3" class="gl"/>
+    <path data-s="3" class="thread" pathLength="1" d="M280 312C300 200 340 90 400-40"/>
+
+    <!-- scene 2: Kenya -->
+    <g data-s="2">
+      <rect y="330" width="800" height="150" fill="url(#dusk)"/>
+      <circle cx="210" cy="150" r="70" fill="#ffcf6b" opacity=".18"/><circle cx="210" cy="150" r="42" fill="#fff3d6"/>
+      <path d="M0 470Q150 420 300 450T600 440T800 450V600H0Z" fill="#1a1030"/>
+      <path d="M470 330Q500 400 590 340" stroke="none" fill="none"/>
+      <path d="M560 480C566 440 556 410 540 380M562 450C580 420 610 400 640 388" stroke="#0c0820" stroke-width="9" fill="none" stroke-linecap="round"/>
+      <ellipse cx="560" cy="372" rx="120" ry="24" fill="#0c0820"/><ellipse cx="640" cy="388" rx="64" ry="14" fill="#0c0820"/>
+      <rect y="478" width="800" height="122" fill="#120a26"/>
+      <use href="#amara" style="--c:#ffc233;--sk:#8a5a3c;--h:#140c1a" transform="translate(240 482) scale(1.8)"/>
+    </g>
+
+    <!-- scene 4: oceans, mountains, cities -->
+    <g data-s="4"><g class="drift">
+      <path d="M-100 420L40 260L140 360L260 220L390 380L500 280L640 400L780 250L900 420Z" fill="#2a2158"/>
+      <path d="M-100 470L10 360L120 430L230 330L350 440L470 360L600 450L720 350L900 470Z" fill="#1d1648"/>
+      <rect x="-100" y="466" width="1000" height="134" fill="#101a46"/>
+      <path d="M-60 500Q0 488 60 500T180 500T300 500T420 500T540 500T660 500T780 500T900 500M-60 540Q0 528 60 540T180 540T300 540T420 540T540 540T660 540T780 540T900 540" stroke="#3a56a8" stroke-width="2" fill="none" opacity=".6"/>
+      <g fill="#ffcf6b"><rect x="60" y="430" width="6" height="14"/><rect x="72" y="420" width="6" height="24"/><rect x="84" y="436" width="6" height="8"/><rect x="590" y="425" width="6" height="19"/><rect x="602" y="412" width="6" height="32"/><rect x="614" y="432" width="6" height="12"/><rect x="626" y="424" width="6" height="20"/></g>
+    </g></g>
+    <path data-s="4" class="thread" pathLength="1" d="M-40 440C150 200 300 120 420 260S700 440 860 160"/>
+
+    <!-- scene 5: people along the thread -->
+    <g data-s="5">
+      <path d="M0 470Q200 440 400 468T800 462V600H0Z" fill="#17113a"/>
+      <use href="#p" style="--c:#ff9a3c;--sk:#c98b5e;--h:#1a1020" transform="translate(115 480) scale(1.4)"/>
+      <use href="#p" style="--c:#2fbf9b;--sk:#f1c8a0;--h:#6b3d1c" transform="translate(230 480) scale(1.4)"/>
+      <use href="#p" style="--c:#7a6cff;--sk:#6b4429;--h:#0e0a14" transform="translate(345 480) scale(1.4)"/>
+      <use href="#p" style="--c:#ff6b9a;--sk:#e0a97c;--h:#2a1a12" transform="translate(460 480) scale(1.4)"/>
+      <use href="#p" style="--c:#ffc233;--sk:#8a5a3c;--h:#140c1a" transform="translate(575 480) sca
